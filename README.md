@@ -468,7 +468,126 @@ fun evalWithLoggin(e: Expr): Int =
 
 
 ## 2.4 while과 for 루프 (대상을 이터레이션)
+- 2장의 특성 중, 자바와 가장 비슷한 것이 인터레이션
+
+### 2.4.1 while 루프
+- while과 do-while은 자바 문법과 동일
+
+### 2.4.2 수에 대한 이터레이션: 범위와 수열
+- 자바의 for 루프 형태가 아닌 범위(range)를 사용한다.
+- 어떤 범위에 속한 값을 일정한 순서로 이터레이션하는 경우를 **수열** 이라고 부른다.
+
+```kotlin
+fun fizzBuzz(i: Int) = when {
+    i % 15 == 0 -> "FizzBuzz"
+    i % 3 == 0 -> "Fizz"
+    i % 5 == 0 -> "Buzz"
+    else -> "$i "
+}
+
+// 일반 모드
+for(i in 1..100) {
+    print(fizzBuzz(i))
+}
+
+// 하드 모드 (거꾸로 세면서 짝수만)
+for(i in 100 downTo 1 step 2) {
+    print(fizzBuzz(i))
+}
+```
+
+- `..`는 항상 범위의 끝 값(우항)을 포함한다.
+- `until` 을 사용하면 끝 값(우항)을 포함하지 않는다.
+
+### 2.4.3 맵에 대한 이터레이션
+
+```kotlin
+val binaryReps = TreeMap<Char, String>()
+
+for(c in 'A'..'F') {    // A부터 F까지 문자의 범위를 이터레이션
+    val binary = Integer.toBinaryString(c.toInt())
+    binaryReps[c] = binary
+}
+
+for((letter, binary) in binaryReps) {   // 맵에 대한 이터레이션 (키와 값을 각 각 대입)
+    println("$letter = $binary")
+}
+```
+- `..` 연산자는 숫자 타입의 값 뿐만 아니라 문자 타입의 값에도 적용가능 (A ~ F)
+- Map에 대한 이터레이션은 key, value 형태로 처리
 
 
+### 2.4.4 in으로 컬렉션이나 범위의 원소 검사
+- `in` 연산자를 사용해 어떤 값이 범위에 속하는지 검사할 수 있다.
+- `!in` 연산자를 사용하면 어떤 값이 범위에 속하지 않는지 검사할 수 있다. 
+
+#### in을 사용해 값이 범위에 속하는지 검사
+```kotlin
+fun isLetter(c: Char) = c in 'a'..'z' || c in 'A'..'Z'
+fun isNotDigit(c: Char) = c !in '0'.. '9'
+    
+println(isLetter('q'))      // true
+println(isNotDigit('x'))    // false
+```
+
+#### when에서 in 사용
+```kotlin
+fun recognize(c: Char) = when(c) {
+    in '0'..'9' -> "It's a digit!"
+    in 'a'..'z', in 'A'..'Z' -> "It's a letter"
+    else -> "I don't know"
+}
+
+println(recognize('8'))   // It's a digit!
+```
+
+- `java.lang.Comparable` 인터페이스를 구현한 클래스라면 인스턴스 객체를 사용해 범위를 만들 수 있다.
+    - ex) `println("Kotlin" in "Java".."Scala")`
+- 컬렉션도 in 연산 사용 가능
+    - ex) `println("Kotlin" in setOf("Java", "Scala"))`
 
 ## 2.5 예외 처리
+- 코틀린의 기본 예외 구문은 자바와 비슷하다. (new를 붙일 필요 없다는 차이점이 있다.)
+- 코틀린의 throw는 식이므로 다른 식에 포함될 수 있다.
+
+### 2.5.1 try, catch, finally
+
+#### 자바스타일로 사용 (Statement)
+```kotlin
+fun readNumber(reader: BufferedReader): Int? {
+    try {
+        val line = reader.readLine()
+        return Integer.parseInt(line)
+    } catch (e: NumberFormatException) {
+        return null
+    } finally {
+        reader.close();
+    }
+}
+```
+
+```java
+public interface Readable {
+    public int read(java.nio.CharBuffer cb) throws IOException;
+}
+```
+- 자바 코드와 가장 큰 차이는 `throws` 절이 없다는 점 (IOException는 체크 예외기 때문에 catch를 잡거나 throws를 던지거나)
+- 자바는 체크 예외 처리를 강제하지만, 코틀린은 체크 예외와 언체크 예외를 구별하지 않는다.
+- 하지만 프로그래머들이 의미 없이 예외를 다시 던지거나, 예외를 잡되 처리하지 않고 무시하는 코드가 흔하다.
+- 체크 예외의 의존성 문제도 있다.
+    - ex) JDBC(SQLException) -> JPA(JPAException) 연관된 코드를 다 변경해야 된다.
+
+### 2.5.2 try를 식으로 사용
+```kotlin
+fun readNumber2(reader: BufferedReader) {
+    val number = try {
+        Integer.parseInt(reader.readLine())
+    } catch (e: NumberFormatException) {
+        return
+    }
+
+    println(number)
+}
+```
+- 코틀린의 try 키워드는 식이기 때문에 값을 변수에 대입할 수 있다.
+- try의 본문을 반드시 중괄호 {}로 둘러 싸야되고, 마지막은 결과 값이어야 한다.
