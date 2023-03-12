@@ -25,7 +25,7 @@ public actual inline fun println(message: Any?) {
 - 코틀린 표준 라이브러리는 자바 라이브러리를 감싼 래퍼 클래스 제공
 
 ### 2.1.2 함수
-- 결과값을 반환하는 함수
+#### 결과값을 반환하는 함수
 
 ```kotlin
 // 블록이 본문인 함수
