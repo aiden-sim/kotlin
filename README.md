@@ -212,6 +212,32 @@ person.setMarried(true) // is를 set으로 변경
 - 게터/세터의 이름을 정하는데 예외가 있는데 is로 시작하는 프로퍼티의 게터는 get이 붙지 않고 원래 이름 사용, 세터는 is를 set으로 바꿔서 사용
 
 ### 2.2.2 커스텀 접근자 
+- 프로퍼티의 접근자를 직접 작성하는 방법에 대해 설명
+
+``` kotlin
+class Rectangle(val height: Int, val width: Int) {
+    // 커스텀 게터 
+    val isSquare: Boolean
+        get() {
+            return height == width;
+        }
+        
+    // 함수로 정의
+    fun isSquare2(): Boolean {
+        return height == width;
+    }
+}
+
+// 정사각형 체크
+val rectangle = Rectangle(41, 43)
+println(rectangle.isSquare)    // false
+println(rectangle.isSquare2()) // false
+```
+- 직사각형 클래스가 자신이 정사각형인지 확인하는 기능 (isSquare)
+- 클라이언트가 프로퍼티에 접근할 때마다 게터가 프로퍼티 값을 매번 다시 계산
+- 함수와 커스텀 게터 정의 차이?
+    - 구현이나 성능상 차이 없음
+    - 일반적으로 클래스의 특성을 정의하고 싶다면 프로퍼티로 그 특성을 정의 (가독성)
 
 
 
