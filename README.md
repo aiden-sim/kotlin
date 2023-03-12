@@ -102,7 +102,7 @@ question = 20 // 컴파일 오류
 
 ### 2.1.4 문자열 템플릿
 
-- java
+#### java
 ```java
 String name = "aiden";
 System.out.println(String.format("Hello, %s!", name));
@@ -111,7 +111,7 @@ System.out.println("Hello, " + name + "!");
 result : Hello, aiden!
 ```
 
-- kotlin
+#### kotlin
 ```kotlin
 val name = "aiden"
 println("Hello, $name!") // 변수가 존재 하지 않으면 컴파일 오류
