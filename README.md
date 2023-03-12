@@ -238,16 +238,237 @@ println(rectangle.isSquare2()) // false
 - 함수와 커스텀 게터 정의 차이?
     - 구현이나 성능상 차이 없음
     - 일반적으로 클래스의 특성을 정의하고 싶다면 프로퍼티로 그 특성을 정의 (가독성)
-
-
+- 커스텀 게터는 일반적인 속성 값의 가공, 함수는 코드 블록 작업을 수행하고 결과 반환 으로 이해하면 될까?!
 
 ### 2.2.3 코틀린 소스코드 구조: 디렉터리와 패키지
+- 코틀린 파일 맨 앞에 package를 넣으면 파일 안에 있는 모든 선언(클래스, 함수, 프로퍼티 등)이 해당 패키지에 속한다.
+- 같은 패키지면 다른 파일이에서 정의한 선언이라도 직접 사용가능
+- 다른 패키지면 임포트를 통해 선언 후 사용
+
+```kotlin
+package part2           // 패키지 선언
+
+import java.util.Random // 클래스 임포트
+
+class Rectangle(val height: Int, val width: Int) {
+    val isSquare: Boolean
+        get() {
+            return height == width;
+        }
+}
+
+fun createRandomRectangle(): Rectangle {
+    val random = Random()
+    return Rectangle(random.nextInt(), random.nextInt())
+}
+```
+
+- 패키지 이름 뒤에 `.*`를 추가하면 패키지 안의 모든 선언을 임포트할 수 있다. (모든 클래스뿐 아니라 최상위 정의된 함수나 프로퍼티까지 불러옴)
+
+#### 자바의 디렉터리 방식 (디렉터리 구조가 패키지 구조와 같아야함)
+
+- ![image](https://user-images.githubusercontent.com/7076334/224544653-8b33b0f4-af64-4b40-b17f-d4330c9a74ff.png)
 
 
 
+#### 코틀린의 디렉터리 방식 (패키지 구조와 디렉터리 구조가 달라도 된다.)
 
-## enum과 when (선택 표현과 처리)
+- ![image](https://user-images.githubusercontent.com/7076334/224544753-0fb763e3-d743-4ab0-91d7-e345c31090f5.png)
 
-## while과 for 루프 (대상을 이터레이션)
+```kotlin
+package geometry.example
 
-## 예외 처리
+class example {
+}
+
+package geometry.shapes
+
+class shapes {
+}
+```
+
+- 코틀린은 어느 디렉터리에 소스코드 파일을 위치시키든 상관 없다.
+- 하지만 자바 규칙을 지키는 편이 낫다 (마이그레이션 시, 문제 발생)
+
+
+## 2.3 enum과 when (선택 표현과 처리)
+- when은 자바의 switch 랑 비슷하지만 더 강력하다.
+- 스마트 캐스트에 대해서도 같이 확인
+
+### 2.3.1 enum 클래스 정의
+
+#### 심플 enum class
+```kotlin
+enum class Color {
+    RED, ORANGE, YELLOW, GREEN, BLUE, INDIGO, VIOLET
+}
+```
+- 자바는 `enum` 만 사용하지만, 코틀린은 `enum class` 를 사용한다.
+- 코틀린에서 `enum`은 **소프트 키워드** 라 부르며 필드, 변수등에서도 사용 가능 (class는 불가)
+
+#### 프로퍼티와 메서드가 있는 enum
+```kotlin
+enum class Color(val r: Int, val g: Int, val b: Int) {
+    RED(255, 0, 0), ORANGE(255, 165, 0),
+    YELLOW(255, 255, 0), GREEN(0, 255, 0), BLUE(0, 0, 255),
+    INDIGO(75, 0, 130), VIOLET(238, 130, 238); // 유일하게 세미콜론 생략 불가
+
+    fun rgb() = (r * 256 + g) * 256 + b
+}
+
+// 사용
+println(Color.BLUE.rgb())
+```
+- enum에서도 일반 클래스와 마찬가지로 생성자와 프로퍼티 선언 가능
+- enum은 클래스 안에 메소드 정의 시, 코틀린에서 유일하게 세미콜론(;) 필수
+
+### 2.3.2 when으로 enum 클래스 다루기
+
+#### when 기본 사용
+```kotlin
+fun getMnemonic(color: Color) = // 니모닉(어떤 것을 기억하는 데 쉽게 하도록 도움을 주는 것, 또는 쉽게 기억되는 성질)
+    when(color) {
+        Color.RED -> "Richard"
+        Color.ORANGE -> "Of"
+        Color.YELLOW -> "York"
+        Color.GREEN -> "Gave"
+        Color.BLUE -> "Battle"
+        Color.INDIGO -> "In"
+        Color.VIOLET -> "Vain"
+}
+```
+- 자바의 차이점은 분이 끝에 break를 넣이 않아도 됨
+- if 문과 비슷
+
+#### 한 when 분기 안에 여러 값 사용
+```kotlin
+fun getWarmth(color: Color) =
+    when(color) {
+        Color.RED, Color.ORANGE, Color.YELLOW -> "warm"
+        Color.GREEN -> "neutral"
+        Color.BLUE, Color.INDIGO, Color.VIOLET -> "cold"
+    }
+```
+
+### 2.3.3 when과 임의의 객체를 함께 사용
+- 분기 조건에 상수만을 사용할 수 있는 자바 switch 와 달리 코틀린의 when의 분기 조건은 임의의 객체를 허용
+
+```kotlin
+fun mix(c1: Color, c2: Color) =
+    when(setOf(c1, c2)) {   // when 식의 인자로 아무 객체나 사용 가능. 인자로 받은 객체가 분기 조건에 있는 객체와 같은지 테스트
+        setOf(RED, YELLOW) -> ORANGE
+        setOf(YELLOW, BLUE) -> GREEN
+        setOf(BLUE, VIOLET) -> INDIGO
+        else -> throw Exception("Dirty color")
+}
+```
+- when 식은 인자 값과 매치하는 조건 값을 찾을 때까지 각 분기를 검사
+- 분기 조건 매치할 때 **동등성** 을 사용 (set 형태이기 때문에 원소의 순서는 중요하지 않음)
+
+### 2.3.4 인자 없는 when 사용
+- 앞의 코드는 호출될 때마다 Set 인스턴스를 생성하기 때문에 비효율적
+- 인자가 없는 when 식을 사용하면 불필요한 객체 생성을 막을 수 있다. (트레이드오프 성능은 좋아지지만 코드가 읽기 어려워짐)
+
+```kotlin
+fun mixOptimized(c1: Color, c2: Color) =
+    when {
+        (c1 == RED && c2 == YELLOW) || (c1 == YELLOW && c2 == RED) -> ORANGE
+        (c1 == YELLOW && c2 == BLUE) || (c1 == BLUE && c2 == YELLOW) -> GREEN
+        (c1 == BLUE && c2 == VIOLET) || (c1 == VIOLET && c2 == BLUE) -> INDIGO
+        else -> throw Exception("Dirty color")
+}
+```
+- when에 아무 인자도 없으려면 각 분기의 조건이 불리언 결과를 계산하는 식어야 한다.
+
+### 2.3.5 스매트 캐스트 : 타입 검사와 타입 캐스트 조합
+
+```kotlin
+interface Expr
+
+class Num(val value: Int) : Expr
+class Sum(val left: Expr, val right: Expr) : Expr
+```
+
+- Expr 인터페이스에는 두 가지 구현 클래스 존재
+    - 어떤 식이 수라면 그 값을 반환
+    - 어떤 식이 합계라면 좌항과 우항의 합한 값을 반환 
+
+#### 자바 스타일 작성 (If문 사용)
+```kotlin
+fun eval(e: Expr): Int {
+    if (e is Num) {
+        val n = e as Num // 불필요 하다.
+        return n.value
+    }
+
+    if (e is Sum) {
+        return eval(e.right) + eval(e.left)
+    }
+    throw IllegalArgumentException("Unknown expression")
+}
+
+// (1 + 2) + 4 = Sum(Sum(Num(1), Num(2)), Num(4))
+```
+
+- 자바에서는 `instanceof` 를 통해 타입을 확인하고, 타입을 캐스팅해서 사용해야 된다.
+- 코틀린에서는 컴파일러가 대신 캐스팅 해준다. `is` 로 검사하고 나면 굳이 캐스팅이 필요 없다. (스마트 캐스트)
+- 원하는 타입으로 명시적으로 타입 캐스팅 하려면 `as` 키워드 사용
+
+
+### 2.3.6 리팩토링 : if를 when으로 변경
+- 코틀리에서는 if가(식) 값을 만들어 내기 때문에 삼항 연산자가 따로 없다.
+- 이런 특성을 이용해서 `eval` 함수에서 `return` 문과 중괄호를 없애고 `if` 식을 사용해 간단하게 리팩토링
+
+#### 코틀린 스타일 작성 (If문 사용)
+```kotlin
+fun eval(e: Expr): Int =
+    if (e is Num) {
+        e.value
+    } else if (e is Sum) {
+        eval(e.right) + eval(e.left)
+    } else {
+        throw IllegalArgumentException("Unknown expression")
+    }
+```
+
+#### 코틀린 스타일 작성 (If문 대신 when 사용)
+```kotlin
+fun eval(e: Expr): Int =
+    when (e) {
+        is Num -> e.value
+        is Sum -> eval(e.right) + eval(e.left)
+        else -> throw IllegalArgumentException("Unknown expression")
+    }
+```
+
+- 받은 값의 타입을 검사하는 when 분기문 형태로 사용 (스마트 캐스트)
+
+### 2.3.7 if와 when의 분기에서 블록 사용
+```kotlin
+fun evalWithLoggin(e: Expr): Int =
+    when (e) {
+        is Num -> {
+            println("num: $(e.value}")
+            e.value
+        }
+
+        is Sum -> {
+            val left = evalWithLoggin(e.left)
+            val right = evalWithLoggin(e.right)
+            println("sum: $left + $right")
+            left + right
+        }
+
+        else -> throw IllegalArgumentException("Unknown expression")
+    }
+
+```
+- 블록의 마지막 식이 블록의 결과여야 한다.
+
+
+
+## 2.4 while과 for 루프 (대상을 이터레이션)
+
+
+
+## 2.5 예외 처리
