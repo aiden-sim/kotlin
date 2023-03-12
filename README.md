@@ -122,7 +122,103 @@ result : Hello, aiden!
 - 복잡한 식도 중괄호({})로 둘러싸서 문자열 템플릿 안에 넣을 수 있음
   - 가독성도 더 좋고, 컴파일러가 한글을 식별자로 인식할 수 있으므로 이 방법 권장
 
-## 클래스와 프로퍼티
+## 2.2 클래스와 프로퍼티
+- 코틀린을 활용하면 더 적은 양의 코드로 클래스와 관련 있는 대부분 작업 수행 가능
+
+- 간단한 자바빈 클래스 Person
+
+- java
+```java
+
+@Getter
+@RequiredArgsConstructor // 롬복 사용
+public class Person {
+    private final String name;
+
+    public Person(String name) {
+        this.name = name; // 필드가 늘어나면 대입문 늘어남
+    }
+
+    public String getName() { // 필드가 늘어나면 getter에 대한 부분도 늘어남
+        return name;
+    }
+}
+```
+
+- kotlin
+```kotlin
+class Person(val name: String)
+```
+- 이런 유형의 클래스를 값 객체라 부름
+- `public` 접근 제어자가 사라졌는데 코틀린은 기본 가시성이 `public` 이라 생략 가능
+
+### 2.2.1 프로퍼티
+- 클래스 목적은 데이터를 캡슐화하고 데이터를 다루는 코드를 한 주체 아래 가두는 것
+- 자바빈즈
+    - 자바에서는 데이터를 필드에 저장, 보통 비공개
+    - 클래스는 클라이언트가 데이터를 접근할 수 있게 **접근자 메소드** 를 제공
+        - 필드를 읽기 위한 게터(getter)
+        - 필드를 변경하게 위한 세터(setter)
+    - 자바에서는 필드와 접근자를 한데 묶어 **프로퍼티** 라 부른다.
+- 코틀린은 프로퍼티를 언어 기본 기능으로 제공하며, 자바의 필드와 접근자 메소드를 완전히 대신한다.
+
+- java
+```java
+public class Person {
+    private final String name;
+
+    private boolean isMarried;
+
+    public Person(String name, boolean isMarried) {
+        this.name = name;
+        this.isMarried = isMarried;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isMarried() {
+        return isMarried;
+    }
+
+    public void setMarried(boolean married) {
+        isMarried = married;
+    }
+}
+```
+
+- kotlin으로 변환
+```kotlin
+class Person(
+    val name: String,       // private field, public getter
+    var isMarried: Boolean  // private field, public getter, public setter
+)
+
+// 코틀린에서 호출
+val person = Person("aiden", false) // new 키워드 없음
+println(person.name)                // 프로퍼티 직접 사용해도 자동으로 게터 호출
+println(person.isMarried)
+person.isMarried = true
+
+// 자바에서 호출
+Person person = new Person("aiden", false);
+System.out.println(person.getName());
+System.out.println(person.isMarried());
+person.setMarried(true) // is를 set으로 변경
+```
+
+- 자바와 코틀린에서 정의한 Person 클래스 중, 어느쪽을 사용해도 client 코드를 바꿀 필요 없다.
+- 게터/세터의 이름을 정하는데 예외가 있는데 is로 시작하는 프로퍼티의 게터는 get이 붙지 않고 원래 이름 사용, 세터는 is를 set으로 바꿔서 사용
+
+### 2.2.2 커스텀 접근자 
+
+
+
+### 2.2.3 코틀린 소스코드 구조: 디렉터리와 패키지
+
+
+
 
 ## enum과 when (선택 표현과 처리)
 
