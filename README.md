@@ -591,3 +591,104 @@ fun readNumber2(reader: BufferedReader) {
 ```
 - 코틀린의 try 키워드는 식이기 때문에 값을 변수에 대입할 수 있다.
 - try의 본문을 반드시 중괄호 {}로 둘러 싸야되고, 마지막은 결과 값이어야 한다.
+
+
+# 3. 함수 정의와 호출
+
+## 3.1 코틀린에서 컬렉션 만들기
+```kotlin
+fun main(argss: Array<String>) {
+    val set = hashSetOf(1, 7, 53)
+    val list = arrayListOf(1, 7, 53)
+    val map = hashMapOf(1 to "one", 7 to "seven", 53 to "fifty-three")
+
+    println(set.javaClass)  // class java.util.HashSet
+    println(list.javaClass) // class java.util.ArrayList
+    println(map.javaClass)  // class java.util.HashMap
+    
+    // 코틀린에서 제공하는 함수
+    println(list.last())
+    println(set.max())
+}
+```
+- to는 키워드가 아니라 일반 함수
+- 이는 코틀린이 자신만의 컬렉션 기능을 제공하지 않는다는 뜻임
+    - 표준 자바 컬렉션을 활용하면 자바 코드와 상호작용하기가 훨씬 더 쉽다. (변환 필요 없음)
+- 하지만 코틀린은 자바보다 더 많은 기능 제공
+    
+
+## 3.2 함수를 호출하기 쉽게 만들기
+
+### joinToString() 초기 구현
+```kotlin
+fun <T> joinToString(
+    collection: Collection<T>,
+    separator: String,
+    prefix: String,
+    postfix: String
+): String {
+    val result = StringBuilder(prefix)
+    for ((index, element) in collection.withIndex()) {
+        if (index > 0) result.append(separator)
+        result.append(element)
+    }
+
+    result.append(postfix)
+    return result.toString()
+}
+
+val list = listOf(1, 2, 3)
+println(joinToString(list, "; ", "(", ")")) // (1; 2; 3)
+```
+- 처음에는 코틀린이 지원하는 여러 기능을 사용하지 않고 직접 함수 구현
+
+### 3.2.1 이름 붙인 인자
+- 위 예제는 함수 시그니처를 보지 않는 이상 문자열 값의 역할을 알기 어렵다.
+
+```kotlin
+println(joinToString(collection, separator = "; ", prefix = "(", postfix = ")"))
+```
+- 다음과 같이 인자 중 일부의 이름을 명시할 수 있다.
+- 애석하게 자바로 작성한 코드를 호출할 때는 이름 붙인 인자를 사용할 수 없다. (JDK 6와 호환을 위해)
+
+### 3.2.2 디폴트 파라미터 값
+
+### 3.2.3 정적인 유틸리티 클래스 없애기: 최상위 함수와 프로퍼티
+
+## 3.3 메소드를 다른 클래스에 추가: 확장 함수와 확장 프로퍼티
+
+### 3.3.1 임포트와 확장 함수
+
+### 3.3.2 자바에서 확장 함수 호출
+
+### 3.3.3 확장 함수로 유틸리티 함수 정의
+
+### 3.3.4 확장 함수는 오버라이드할 수 없다
+
+### 3.3.5 확장 프로퍼티
+
+## 3.4 컬렉션 처리: 가변 길이 인자, 중위 함수 호출, 라이브러리 지원
+
+### 3.4.2 가변 인자 함수: 인자의 개수가 달라질 수 있는 함수 정의
+
+### 3.4.3 값의 쌍 다루기: 중위 호출과 구조 분해 선언
+
+## 3.5 문자열과 정규식 다루기
+
+### 3.5.1 문자열 나누기
+
+### 3.5.2 정규식과 3중 따옴표로 묶은 문자열
+
+### 3.5.3 여러 줄 3중 따옴표 문자열
+
+## 3.6 코드 다듬기: 로컬 함수와 확장
+
+
+
+
+
+
+
+
+
+
