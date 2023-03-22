@@ -795,22 +795,80 @@ val String.lastChar: Char
 - 확장 프로퍼티는 상태를 가질 수 없기 때문에 초기화 코드 사용 불가
 
 ## 3.4 컬렉션 처리: 가변 길이 인자, 중위 함수 호출, 라이브러리 지원
+- 컬렉션을 처리할 때 쓰는 코틀린 표준 라이브러리 소개
+    - vararg 키워드를 사용하면 호출 시 인자 개수가 달라질 수 있는 함수를 정의
+    - 중위 함수 호출 구문을 사용하면 인자가 하나뿐인 메소드를 간편하게 호출할 수 있다.
+    - 구조 분해 선언을 사용하면 복합적인 값을 분해해서 여러 변수에 나눠 담을 수 있다.
+
+### 3.4.1 자바 컬렉션 API 확장
+
+```kotlin
+val strings: List<String> = listOf("first", "second", "fourteenth")
+strings.last()  // fourteenth
+
+val numbers: Collection<Int> = setOf(1, 14, 2)
+numbers.max()   // 14
+
+
+public fun <T> List<T>.last(): T {
+    if (isEmpty())
+        throw NoSuchElementException("List is empty.")
+    return this[lastIndex]
+}
+
+public fun <T : Comparable<T>> Iterable<T>.max(): T? {
+    return maxOrNull()
+}
+```
+- last와 max는 코틀린에서 제공하는 확장 함수
 
 ### 3.4.2 가변 인자 함수: 인자의 개수가 달라질 수 있는 함수 정의
+- 자바에서는 가변인자로 `...` 를 붙이지만 코틀리에서는 파라미터 앞에 `vararg` 변경자를 붙인다.
+- 코틀리에서는 가변인자에 배열을 넘길때 명ㅇ시적으로 풀어서 원소가 인자로 전달되게 해야된다.
+    - 이러한 역할을 `스프레드 연산자(*)` 가 해준다.
+
+```kotlin
+var list = listOf("args: ", *args) // 스프레드 연산자
+println(list)
+```
 
 ### 3.4.3 값의 쌍 다루기: 중위 호출과 구조 분해 선언
-
+```kotlin
+val map = mapOf(1 to "one", 7 to "seven", 53 to "fifty-three")
+```
+- to라는 단어는 코틀린 키워드가 아닌 `중위 호출` 이라는 특별한 방식으로 to라는 일반 메소드를 호출한 것
+- `구조 분해 선언`
 
 
 ## 3.5 문자열과 정규식 다루기
+- 코틀린 문자열은 자바 문자열과 같다.  (특별 변환도 필요 없고, 별도의 래퍼도 생기지 않는다.)
+- 코틀린은 다양한 확장 함수를 제공한다.
 
 ### 3.5.1 문자열 나누기
+- 자바에서 split은 정규식 사용하기 때문에 `.` 인식을 못함
+- 코틀린에서는 혼돈을 줄이기 위해 정규식을 파라미터로 받는 함수는 String이 아닌 Regex 타입의 값을 받음
+
+```kotlin
+println("12.345-6.A".split("\\.|-".toRegex()))  // 정규식 방식
+println("12.345-6.A".split(".", "-"))           // 문자열 방식
+```
 
 ### 3.5.2 정규식과 3중 따옴표로 묶은 문자열
+```kotlin
+fun parsePath(path: String) {
+    val regex = """(.+)/(.+)\.(.+)""".toRegex()
+    val matchResult = regex.matchEntire(path)
+    if(matchResult != null) {
+        val (directory, fileName, extension) = matchResult.destructured
+        println("Dir: $directory, name: $fileName, ext: $extension ")
+    }
+}
+```
+- 3중 따옴표 무낮열을 사용해 정규식을 사용
+- 문자열 이스케이프 필요 없음 (\\)
 
 ### 3.5.3 여러 줄 3중 따옴표 문자열
-
-
+- 3중 따옴표는 줄 바꿈을 표현하는 문자열도 그대로 들어간다.
 
 ## 3.6 코드 다듬기: 로컬 함수와 확장
 
