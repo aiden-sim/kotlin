@@ -761,11 +761,38 @@ fun <T> Collection<T>.joinToString( // Collection<T> 에 대한 확장 함수를
 
 ### 3.3.4 확장 함수는 오버라이드할 수 없다
 - 확장 함수를 오버라이드할 수 없다.
-- 
+- 확장 함수는 클래스의 일부가 아니다. 클래스 밖에 선언된다.
+- 확장 함수 호출 시, 수신 객체로 지정한 변수의 정적 타입에 의해 어떤 확장 함수가 호출될지 결정되기 때문에
+
+```kotlin
+fun View.showOff() = println("I'm a view!")
+fun Button.showOff() = println("I'm a button!")
+
+val view : View = Button()
+view.showOff()              // I'm a view!  (확장 함수는 정적으로 결정된다.)
+```
+
+```java
+View view = new Button();
+ExtensionsKt.showOff(view);
+```
+
+- 클래스를 확장한 삼수와 그 클래스의 멤버 함수의 이름과 시그니처가 같다면 멤버함수가 호출된다. (운선순위가 멤버 함수가 더 높음)
 
 ### 3.3.5 확장 프로퍼티
+- 확장 프로퍼티를 사용하면 기존 클래스 객체에 대한 프로퍼티 형식의 구문으로 사용할 수 있는 API를 추가할 수 있다. (상태 없음)
 
 
+```kotlin
+// 확장 함수
+fun String.lastChar(): Char = this.get(this.length - 1)
+
+// 확장 프로퍼티
+val String.lastChar: Char
+    get() = get(length - 1)
+```
+- 뒷받침하는 필드가 없어서 기본 게터 구현을 제공할 수 없기 때문에 최소한 게터는 꼭 정의해야 한다.
+- 확장 프로퍼티는 상태를 가질 수 없기 때문에 초기화 코드 사용 불가
 
 ## 3.4 컬렉션 처리: 가변 길이 인자, 중위 함수 호출, 라이브러리 지원
 
