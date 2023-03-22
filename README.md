@@ -705,23 +705,75 @@ public class JoinKt {
 - 최상위 프로퍼티도 사용 가능
 
 ## 3.3 메소드를 다른 클래스에 추가: 확장 함수와 확장 프로퍼티
+- 기존 코드와 코틀린 코드를 자연스럽게 통합하는 것이 코틀린의 핵심 목표중 하나
+- 확장 함수는 어떤 클래스의 멤버 메소드인 것처럼 호출할 수 있지만 그 클래스의 밖에 선언된 함수
 
+```kotlin
+fun String.lastChar(): Char = this.get(this.length -1)
+
+println("Kotlin".lastChar()) // n
+```
+- 확장 함수를 만들려면 추가하려는 함수 이름 앞에 그 함수가 확장할 클래스의 이름을 덧붙이기만 하면 된다.
+- 클래스 이름을 수신 `객체 타입` 이라 부르며, 확장 함수가 호출되는 대상이 되는 값을 `수신 객체` 라고 부른다.
+- 클래스 안에서 정의한 안에서 정의한 메소드와 달리 확장 함수 안에서는 클래스 내부에서만 사용되는 비공개 멤버나 보호된 멤버를 사용할 수 없다. (캡슐화 유지)
 
 ### 3.3.1 임포트와 확장 함수
+- 확장 함수를 사용하기 위해서는 임포트해야만 한다. (충돌 발생할 수 있으므로)
+
+```kotlin
+// case1
+import strings.lastChar
+
+val c = "kotlin".lastChar()
+
+// case2
+import strings.*
+
+val c = "kotlin".lastChar()
+
+// case3
+import strings.lastChar as last
+
+val c = "kotlin".last()     // 임포트한 클래스나 함수를 다른 이름으로 부를 수 있다.
+```
+- 다른 여러 패키지에 속해있는 이름이 같은 함수를 사용할 경우 이름을 변경해서(as) 임포트하면 이름 충돌을 막을 수 있다.
 
 ### 3.3.2 자바에서 확장 함수 호출
+- 내부적으로 확장 함수는 수신 객체를 첫 번째 인자로 받는 정적 메소드다. (실행 시점 비용이 들지 않음)
 
 ### 3.3.3 확장 함수로 유틸리티 함수 정의
+```kotlin
+fun <T> Collection<T>.joinToString( // Collection<T> 에 대한 확장 함수를 선언
+    separator: String = ", ",       // 디폴트 파라미터
+    prefix: String = "",
+    postfix: String = ""
+): String {
+    val result = StringBuilder(prefix)
+    for ((index, element) in this.withIndex()) {    // 기존에는 Collection을 파라미터 받아서 사용했지만, 수식 객체를 사용하기 때문에 this로 호출
+        if (index > 0) result.append(separator)
+        result.append(element)
+    }
+
+    result.append(postfix)
+    return result.toString()
+}
+```
 
 ### 3.3.4 확장 함수는 오버라이드할 수 없다
+- 확장 함수를 오버라이드할 수 없다.
+- 
 
 ### 3.3.5 확장 프로퍼티
+
+
 
 ## 3.4 컬렉션 처리: 가변 길이 인자, 중위 함수 호출, 라이브러리 지원
 
 ### 3.4.2 가변 인자 함수: 인자의 개수가 달라질 수 있는 함수 정의
 
 ### 3.4.3 값의 쌍 다루기: 중위 호출과 구조 분해 선언
+
+
 
 ## 3.5 문자열과 정규식 다루기
 
@@ -730,6 +782,8 @@ public class JoinKt {
 ### 3.5.2 정규식과 3중 따옴표로 묶은 문자열
 
 ### 3.5.3 여러 줄 3중 따옴표 문자열
+
+
 
 ## 3.6 코드 다듬기: 로컬 함수와 확장
 
