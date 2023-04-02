@@ -6,8 +6,60 @@
 - 코틀린 가시성/접근 제한자는 자바와 비슷하지만 아무것도 지정하지 않은 경우 기본 가시성이 다르다.
 
 ### 4.1.1 코틀린 인터페이스
-- 
+- 코틀린 인터페이스는 자바8 인터페이스와 비슷 (추상 메서드 뿐만 아니라 구현 메소드 정의 가능)
+- 다만 인터페이스에는 아무런 상태(필드) 도 들어갈 수 없음
 
+```kotlin
+interface Clickable {
+    fun click()   // 일반 메소드 선언 (추상 메소드)
+    fun showOff() = println("I'm clickable!") // 디폴트 구현 메소드
+}
+
+class Button : Clickable {
+    override fun click() = println("I was clicked")
+}
+
+Button().click() // I was clicked
+```
+
+- 코틀린에서는 클래스 이름 뒤에 콜론(:) 을 붙이는 걸로 클래스 확장과 인터페이스 구현을 모두 처리
+- 자바와 마찬가지로 클래스는 인터페이스 확장 갯수 제한 없지만 클래스는 오직 하나만 확장 가능
+- 자바와 달리 코틀린은 `override` 변경자를 꼭 사용해야 함
+- 인터페이스 메소드도 디폴트 구현을 제공. 그냥 메소드 본문을 메소드 시그니처 뒤에 추가하면 됨
+
+```kotlin
+interface Clickable {
+    fun click()
+    fun showOff() = println("I'm clickable!")
+}
+
+interface Focusable {
+    fun setFocus(b: Boolean) =
+        println("I ${if (b) "got" else "lost"} focus.")
+
+    fun showOff() = println("I'm focusable!")
+}
+```
+- 한 클래스에서 이 두 인터페이스를 함께 구현하면 어떻게 될까?!
+  - 어느쪽도 선택되지 않는다. (컴파일 오류 발생)
+
+
+```kotlin
+class Button : Clickable, Focusable {
+    override fun click() = println("I was clicked")
+    
+    // 여러개 호출
+    override fun showOff() {  // 이름과 시그니처가 같은 멤버 메소드에 대해 둘 이상의 디폴트가 있는 경우 하위 클래스에 명시적으로 새로운 구현을 제공
+        super<Clickable>.showOff()
+        super<Focusable>.showOff()
+    }
+    
+    // 하나 호출
+    override fun showOff() = super<Clickable>.showOff()
+}
+```
+- 자바에서는 `Clickable.super.showOff()`
+- 코틀린에서는 `super<Clickable>.showOff()`
 
 
 ### 4.1.2 open, final, abstract 변경자: 기본적으로 final
