@@ -108,14 +108,95 @@ class RichButton : Clickable {
 
 
 ### 4.1.4 내부 클래스와 중첩된 클래스: 기본적으로 중첩 클래스
+- 자바와의 차이는 코틀린의 중첩 클래스는 명시적으로 요청하지 않는 한 바깥쪽 클래스 인스턴스에 대한 접근 권한이 없음
+- 자바에서는 다른 클래스 안에 정의한 클래슨느 자동으로 내부 클래스가 됨(직렬화 방해)
+    - 이 문제 해결하려면 내부 클래스를 static 으로 선언해야 됨
+
+```kotlin
+class Button : View {
+    override fun getCurrentState(): State = ButtonState()
+
+    override fun restoreState(state: State) {
+        TODO("Not yet implemented")
+    }
+
+    class ButtonState : State {}    // 자바의 정적 중첩 클래스와 대응
+}
+```
+- 내부 클래스로 변경해서 바깥쪽 클래스에 대한 참조를 포함하게 만들고 싶다면 `inner` 변경자를 붙여야 함
+- 내부 클래스 `inner` 안에서 바깥쪽 클래스 `outer` 의 참조에 접근하려면 `this@outer` 라고 써야됨
+
+```kotlin
+class Outer {
+    inner class Inner {
+        fun getOuterReference(): Outer = this@Outer
+    }
+}
+```
 
 ### 4.1.5 봉인된 클래스: 클래스 계층 정의 시 계층 확장 제한
+- 상위 클래스에 `sealed` 변경자를 붙이면 그 상위 클래스를 상속한 하위 클래스 정의를 제한할 수 있음
+    - 반드시 상의 클래스 안에 중첩시켜야 함
 
+```kotlin
+sealed class Expr { // 기반 클래스를 sealed로 봉인
+    class Num(val value: Int) : Expr()  // 기반 클래스의 모든 하위 클래스를 중첩 클래스로 나열
+    class Sum(val left: Expr, val right: Expr) : Expr()
+}
 
+fun eval(e: Expr): Int =
+    when (e) {  // when 식이 모든 하위 클래스를 검사하므로 별도의 else 분기 필요 없음
+        is Expr.Num -> e.value
+        is Expr.Sum -> eval(e.right) + eval(e.left)
+    }
+```
+- `when` 식에서 `sealed` 클래스의 모든 하위 클래스를 처리한다면 디폴트 분기 필요 없음
+- 나중에 `Expr` 하위 클래스가 추가되도 컴파일 에러가 발생해서 금방 알아챌 수 있음
 
 ## 4.2 뻔하지 않은 생성자와 프로퍼티를 갖는 클래스 선언
+- 코틀린은 주 생성자와 부 생성자를 구분
+- 코틀린은 초기화 블록을 통해 초기화 로직을 추가할 수 있음
 
 ### 4.2.1 클래스 초기화: 주 생성자와 초기화 블록
+
+```kotlin
+class User(val nickname: String)
+```
+- 클래스 이름 뒤에 오는 괄호로 둘러싸인 코드를 주 생성자라고 부름
+- 주 생성자는 파라미터를 지정하고 그 생성자 파라미터에 의해 초기화되는 프로퍼티를 정의하는 두 가지 목적
+
+```kotlin
+class User constructor(_nickname: String) { // 파라미터가 하나만 있는 주 생성자
+    val nickname: String
+
+    init {                                  // 초기화 블록
+        nickname = _nickname
+    }
+}
+```
+- `constructor` 키워드는 주 생성자나 부 생성자 정의를 시작할 때 사용
+- `init` 키워드는 초기화 블록을 시작 (클래스의 객체가 만들어질 때 실행될 초기화 코드)
+
+- 기반 클래스를 초기화하려면 기반 클래스 이름 뒤에 괄호를 치고 생성자 인자를 넘김
+```kotlin
+open class User2(val nickname: String) {
+}
+
+class TwitterUser(nickname: String) : User2(nickname) {
+}
+```
+
+- 기반 클래스의 생성자는 아무 인자도 받지 않지만, 상속한 하위 클래스는 반드시 기반 클래스의 생성자를 호출해야 함
+```kotlin
+open class Button
+
+class RedioButton : Button()
+```
+
+- 인터페이스는 생성자가 없기 때문에 자식 클래스가 인터페이스를 구현하는 경우, 인터페이스 이름 뒤에는 아무 괄호도 없음
+
+
+
 
 ### 4.2.2 부 생성자: 상위 클래스를 다른 방식으로 초기화
 
