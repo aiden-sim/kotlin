@@ -196,15 +196,64 @@ class RedioButton : Button()
 - 인터페이스는 생성자가 없기 때문에 자식 클래스가 인터페이스를 구현하는 경우, 인터페이스 이름 뒤에는 아무 괄호도 없음
 
 
-
-
 ### 4.2.2 부 생성자: 상위 클래스를 다른 방식으로 초기화
+- 코틀린에서 생성자를 여러개 지원하는 경우는 프레임워크 클래스 확장 시, 여러 가지 방법으로 인스턴스 초기화할 수 있게 다양한 생성자를 지원
+- 클래스를 확장하면서 똑같이 부 생성자를 정의할 수 있음
+- 클래스에 주 생성자가 없다면 모든 부 생성자는 반드시 상위 클래스를 초기화하거나 다른 생성자에게 생성을 위임
 
 ### 4.2.3 인터페이스에 선언된 프로퍼티 구현
+- 인터페이스에 추상 프로퍼티 선언을 넣을 수 있음
+
+```kotlin
+interface User {
+    val nickname: String
+}
+
+class PrivateUser(override val nickname: String) : User3    // 주 생성자에 있는 프로퍼티
+
+class SubscribingUser(val email: String) : User3 {
+    override val nickname: String
+        get() = email.substringBefore('@')           // 커스텀 게터
+}
+
+class FacebookUser(val accountId: Int) : User3 {
+    override val nickname = getFacebookName(accountId)
+
+    private fun getFacebookName(accountId: Int): String {
+        TODO("Not yet implemented")
+    }
+}
+```
+- `SubscribingUser` 의 `nickname` 은 매번 호출될 때마다 `substringBefore` 를 호출해 계산
+- `FacebookUser` 의 `nickname` 은 객체 초기화 시, 필드에 저장했다가 불러오는 방식
 
 ### 4.2.4 게터와 세터에서 뒷받침하는 필드에 접근
+```kotlin
+class User4(val name: String) {
+    var address: String = "unspecified"
+        set(value: String) {
+            field = value
+        }
+}
+```
+- 코틀린에서 값을 바꿀때는 `user.address = "new value"` 처럼 필드 설정 구문을 사용
+    - 내부적으로 `address` 의 세터 호출
+- 접근자의 본문에서는 `field` 라는 특별한 식별자를 통해 뒷받침하는 필드에 접근 가능
+- 게터에서는 `field` 값을 읽을 수만 있고, 세터에서는 `field` 값을 읽거나 쓸 수 있음
 
 ### 4.2.5 접근자의 가시성 변경
+```kotlin
+class LenghtCounter {
+    var counter: Int = 0
+        private set         // 이 클래스 밖에서 이 프로퍼티의 값을 바꿀 수 없음
+
+    fun addWord(word: String) {
+        counter += word.length
+    }
+}
+```
+
+
 
 ## 4.3 컴파일러가 생성한 메소드: 데이터 클래스와 클래스 위임
 
