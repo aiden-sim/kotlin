@@ -254,14 +254,61 @@ class LenghtCounter {
 ```
 
 
-
 ## 4.3 컴파일러가 생성한 메소드: 데이터 클래스와 클래스 위임
+- 코틀린에서는 `equals`, `hashCode`, `toString` 등의 메소드를 자동으로 지원
 
 ### 4.3.1 모든 클래스가 정의해야 하는 메소드
+- 자바와 마찬가지로 코틀린 클래스도 `toString`, `equals`, `hashCode` 등 오버라이드 지원
+
+#### 문자열 표현: toString()
+- 디버깅과 로깅 시 사용
+
+```kotlin
+class Client(val name: String, val postalCode: Int) {
+    override fun toString() = "Client(name=$name, postalCode=$postalCode)"
+}
+```
+
+#### 객체의 동등성: equals()
+```kotlin
+class Client(val name: String, val postalCode: Int) {
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is Client)
+            return false;
+
+        return name == other.name && postalCode == other.postalCode
+    }
+
+    override fun toString() = "Client(name=$name, postalCode=$postalCode)"
+}
+
+fun main(args: Array<String>) {
+    val client1 = Client("오현석", 4122)
+    val client2 = Client("오현석", 4122)
+
+    println(client1 == client2) // true
+}
+
+```
+
+#### 해시 컨테이너: hashCode()
+```kotlin
+class Client(val name: String, val postalCode: Int) {
+    override fun hashCode(): Int = name.hashCode() * 31 + postalCode
+}
+
+```
+
+
 
 ### 4.3.2 데이터 클래스: 모든 클래스가 정의해야 하는 메소드 자동 생성
 
+
+
 ### 4.3.3 클래스 위임: by 키워드 사용
+
+
+
 
 
 ## 4.4 object 키워드: 클래스 선언과 인스턴스 생성
