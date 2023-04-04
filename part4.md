@@ -299,30 +299,108 @@ class Client(val name: String, val postalCode: Int) {
 
 ```
 
-
-
 ### 4.3.2 데이터 클래스: 모든 클래스가 정의해야 하는 메소드 자동 생성
+- `data` 라는 변경자를 클래스 앞에 붙이면 필요한 메소드를 컴파일러가 자동으로 만들어 준다.
+
+```kotlin
+data class Client(val name: String, val postalCode: Int)
+```
+- 위 클래스는 다음과 같은 기능을 포함한다.
+    - 인스턴스 간 비교를 위한 equals
+    - HashMap과 같은 해시 기반 컨테이너에서 키로 사용할 수 있는 hashCode
+    - 클래스의 각 필드를 선언 순서대로 표시하는 문자열 표현을 만들어주는 toString
 
 
+#### 데이터 클래스의 불변성: copy() 메소드
+```kotlin
+class Client(val name: String, val postalCode: Int) {
+    fun copy(name: String = this.name, postalCode: Int = this.postalCode) = Client(name, postalCode)
+}
+
+fun main(args: Array<String>) {
+    val lee = Client("이계영", 4122)
+    println(lee.copy(postalCode = 4000))    // Client(name=이계영, postalCode=4000)
+}
+```
 
 ### 4.3.3 클래스 위임: by 키워드 사용
-
-
-
-
+- 인터페이스를 구현할 때 `by` 키워드를 통해 그 인터페이스에 대한 구현을 다른 객체에 위임 중이라는 사실을 명시할 수 있다.
 
 ## 4.4 object 키워드: 클래스 선언과 인스턴스 생성
+- object 키워드를 사용하는 여러 상황
+    - 객체 선언은 싱글턴을 정의하는 방법 중 하나
+    - 동반 객체는 인스턴스 메소드는 아니지만 어떤 클래스와 관련된 메소드와 팩토리 메소드를 담을 때 사용
+    - 객체 식은 자바의 무명 내부 클래스 대신 사용 
 
 ### 4.4.1 객체 선언: 싱글턴을 쉽게 만들기
+- 코틀린은 객체 선언 기능을 통해 싱글턴을 언어에서 기본으로 지원
+- 객체 선언은 클래스 선언과 그 클래스에 속한 단일 인스턴스의 선언을 합친 선언
+- 객체 선언도 클래스나 인터페이스 상속 가능
+
+```kotlin
+object CaseInsensitiveFileComparator : Comparator<File> {
+    override fun compare(file1: File, file2: File): Int {
+        return file1.path.compareTo(file2.path, ignoreCase = true)
+    }
+}
+
+fun main(args: Array<String>) {
+    println(
+        CaseInsensitiveFileComparator.compare(
+            File("/User"), File("/user")    // 0
+        )
+    )
+}
+```
 
 ### 4.4.2 동반 객체: 팩토리 메소드와 정적 멤버가 들어갈 장소
+- 코틀린 언어는 자바 `static` 키워드를 지원하지 않는다.
+- 대신 패키지 수준의 최상위 함수와 객체 선언을 활용
+- 클래스 안에 정의된 객체 중 하나에 `companion` 이라는 특별한 표시를 붙이면 그 클래스의 동반 객체로 만들 수 있음
+    - 동반 객체는 자신을 둘러싼 클래스의 모든 `private` 멤버에 접근 가능 (팩토리 패턴을 구현하기 적합) 
+
+```koltin
+class User private constructor(val nickname: String) {
+    companion object {
+        fun newSubscribingUser(email: String) = User(email.substringBefore('@'))
+        fun newFacebookUser(accountId: Int) = User(getFacebookName(accountId))
+
+        private fun getFacebookName(accountId: Int): String {
+            TODO("Not yet implemented")
+        }
+    }
+}
+
+fun main(args: Array<String>) {
+    val subscribingUser = User5.newSubscribingUser("bob@gmail.com")
+    println(subscribingUser.nickname)   // bob
+}
+```
 
 ### 4.4.3 동반 객체를 일반 객체처럼 사용
 
+#### 동반 객체에서 인터페이스 구현
+- 클래스의 동반 객체는 일반 객체와 비슷한 방식으로, 클래스에 정의된 인스턴스를 가리키는 정적 필드로 컴파일됨
+- 동반 객체에 이름을 붙이지 않았따면 자바쪽에서 `Companion` 이라는 이름으로 그 참조에 접근 가능
+
+#### 동반 객체 확장
+```kotlin
+class Person(val fristName: String, val lastName: String) {
+    companion object {
+    }
+}
+
+fun Person.Companion.fronJSON(json: String): Person {
+
+    return TODO("Provide the return value")
+}
+
+fun main(args: Array<String>) {
+    val p = Person.fronJSON(json)
+}
+```
+- 마치 동반 객체 안에서 `fromJSON` 함수를 정의한 것처럼 호출할 수 있음
+
 ### 4.4.4 객체 시: 무명 내부 클래스를 다른 방식으로 작성
-
-
-## 4.5 요약
-
-
-
+- 무명 객체를 정의할 때도 `object` 키워드 사용 (익명 내부 클래스)
+- 
