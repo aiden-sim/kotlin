@@ -146,12 +146,104 @@ public interface Comparable<in T> {
 ## 7.3 컬렉션과 범위에 대해 쓸 수 있는 관례
 
 ### 7.3.1 인덱스로 원소에 접근: get과 set
+- 인덱스 연산자를 사용해 원소를 읽는 연산은 get 연산자 메소드로 변환되고, 원소를 쓰는 연산은 set 연산자 메소드로 변환된다.
+
+```kotlin
+// get 관례
+operator fun Point.get(index: Int): Int {
+    return when (index) {
+        0 -> x
+        1 -> y
+        else ->
+            throw IndexOutOfBoundsException("Invalid coordinate $index")
+    }
+}
+
+>>> val p = Point(10, 20)
+>>> println(p1[1])
+20
+```
+- get 이라는 메소드를 만들고 operator 변경자를 붙이기만 하면 됨
+- get 메소드의 파라미터는 Int가 아닌 타입도 사용 가능(map key), 여러 파라미터도 사용 가능(2차원 배열)
+
+```kotlin
+// set 관례
+data class MutablePoint(var x: Int, var y: Int)
+
+operator fun MutablePoint.set(index: Int, value: Int) {
+    when (index) {
+        0 -> x = value
+        1 -> y = value
+        else ->
+            throw IndexOutOfBoundsException("Invalid coordinate $index")
+    }
+}
+
+>>> val p = MutablePoint(10, 20)
+>>> p[1] = 42
+>>> println(p)
+MutablePoint(x=10, y=42)
+```
+- set 이라는 메소드를 만들고 operator 변경자를 붙이기만 하면 됨
 
 ### 7.3.2 in 관례
+```kotlin
+data class Rectangle(val upperLeft: Point, val lowerRight: Point)
+
+// until 을 사용하면 끝 값(우항)을 포함하지 않는다.
+operator fun Rectangle.contains(p: Point): Boolean {
+    return p.x in upperLeft.x until lowerRight.x &&
+            p.y in upperLeft.y until lowerRight.y
+}
+
+>>> val rect = Rectangle(Point(10, 20), Point(50, 50))
+>>> println(Point(20, 30) in rect)
+true
+>>> println(Point(5, 5) in rect)
+false
+```
+- in 연산자와 대응하는 함수는 contains
+- ![image](https://github.com/simjunbo/kotlin/assets/7076334/e15cace4-c92f-4958-b717-ffe2dcdc3595)
+
 
 ### 7.3.3 rangeTo 관례
 
+- .. 연산자는 rangeTo 함수를 간략하게 표현하는 방법
+- ![image](https://github.com/simjunbo/kotlin/assets/7076334/74fb0803-67ef-47eb-b90e-6193db25c99d)
+
+- rangeTo 연산자는 아무 클래스에 정의 가능. 하지만 Comparable 인터페이스 구현하면 rangeTo 함수가 들어 있다.
+
+```kotlin
+>>> val now = LocalDate.now()
+>>> val vacation = now..now.plusDays(10) // now.rangeTo(now.plusDays(10)) 으로 변환
+>>> println(now.plusWeeks(1) in vacation)
+true
+```
+
 ### 7.3.4 for 루프를 위한 iterator 관례
+```kotlin
+for(x in list) {
+}
+```
+- for 루프에서 사용하는 in의 의미는 다르다.
+  - list.iterator() 를 호출해서 이터레이터를 얻은 다음, hasNext와 next 호출을 반복하는 식으로 변환됨
+
+
+- 하지만 코틀린에서는 이 또한 관례이므로 iterator 메소드를 확장 함수로 정의할 수 있다.
+
+```kotlin
+public operator fun CharSequence.iterator(): CharIterator = object : CharIterator() {
+    private var index = 0
+
+    public override fun nextChar(): Char = get(index++)
+
+    public override fun hasNext(): Boolean = index < length
+}
+
+>>> for (c in "abc") {}
+```
+- 코틀린 표준 라이브러리는 String의 상위 클래스인 CharSequence에 대한 iterator 확장 함수를 제공
+- 클래스 안에 직접 iterator 메소드 구현 가능 ex) p.325
 
 
 ## 7.4 구조 분해 선언과 component 함수
