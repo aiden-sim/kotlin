@@ -310,22 +310,144 @@ fun printEntries(map: Map<String, String>) {
 - 예를 들어 프로퍼티 위임을 통해 자신의 값을 필드가 아닌 데이터베이스 테이블이나 브라우저 세션, 맵등에 저장
 - 위임은 객체가 직접 작업을 수행하지 않고 다른 도우미 객체가 그 작업을 처리하도록 맡기는 디자인 패턴. 이때 작업을 처리하는 도우미 객체를 위임 객체라 부름
 
-### 7.5.1 위임 프로퍼티 소개
+### 7.5.1 위임 프로퍼티 소개 (기본 형태)
+
+```kotlin
+class Foo {
+    var p: Type by Delegate()
+}
+
+// 컴파일 시
+class Foo {
+    private val delegate = Delegate() // 도우미 프로퍼티. by 키워드를 통해 프로퍼티와 위임 객체를 연결
+    var p: Type // p 프로퍼티는 내부에서 delegate.getValue(...) 호출
+    set(value: Type) = delegate.setValue(..., value)
+    get() = gelegate.getValue(...)
+}
+
+class Delegate {
+    operator fun getValue(...) {...}
+    operator fun setValue(..., value: Type) {...}
+}
+```
+- 일반적인 문법 형태
+- p 프로퍼티는 접근자 로직을 다른 객체에 위임. Delegate 클래스의 인스턴스를 위임 객체로 사용(도우미 객체)
+- 위임 관례를 따르는 Delegate 클래스는 `getValue`와 `setValue` 메소드를 제공
+
+- ![image](https://github.com/simjunbo/kotlin/assets/7076334/239bb608-150c-4a8d-8e03-c92410644442)
+  - client 입장에서는 Delegate 존재를 모른다. (일반 프로퍼티 처럼 사용)
+  - proxy 역할?
 
 
 ### 7.5.2 위임 프로퍼티 사용: by lazy()를 사용한 프로퍼티 초기화 지연
+- 지연 초기화는 객체의 일부분을 초기화하지 않고 남겨뒀다가 실제로 필요 시 초기화해서 사용 (쓸대 없는 메모리 낭비 방지)
 
+```kotlin
+// 일반 방식
+class Person(val name: String) {
+    private var _emails: List<Email>? = null
+    val emails: List<Email>
+        get() {
+            if (_emails == null) {  // 최초 접근 시 이메일 가져옴
+                _emails = loadEmails(this)
+            }
+            return _emails!!
+        }
+}
+```
+- 기존 방식은 코드가 다소 복잡하고, 스레드 세이프하지 않다.
+
+```kotlin
+// 지연 초기화 방식
+class Person(val name: String) {
+      val emails by lazy { loadEmails(this) }
+}
+```
+- lazy 함수는 코틀린 관례에 맞는 시그니처의 getValue 메소드가 들어있는 객체를 반환
+  - lazy를 by 키워드로 함께 사용하면 위임 프로퍼티를 만들 수 있다. 
+- lazy 함수는 기본저긍로 스레드에 안전
 
 ### 7.5.3 위임 프로퍼티 구현
+- 통지 시스템을 위임 프로퍼티 없이 구현하고, 나중에 위임 프로퍼티를 사용하게 리팩토링 내용
 
+- 1) 통지 시스템을 그냥 코드로 위임하게 구현
+- 2) 통지 시스템의 위임 부분을 ObservableProperty 로 만들어서 위임 프로퍼티 형태로 사용
+- 3) 코틀린에서 제공하는 라이브러리(Delegates.observable) 사용해서 통지 시스템 구현
 
 ### 7.5.4 위임 프로퍼티 컴파일 규칙
 
+```kotlin
+class C {
+    var prop: Type By MyDeleage()
+}
+
+// 컴파일 시
+class C {
+    private var <delegate> = MyDeleage() // 감춰진 프로퍼티 (delegate)
+    var prop: Type
+    get() = <delegate>.getValue(this, <property>) // propertyName 을 의미 하는가?
+    set(value: Type) = <delegate>.setValue(this, <property>, value)
+}
+```
+
+- ![image](https://github.com/simjunbo/kotlin/assets/7076334/c734ef2a-f06a-43a6-8d86-79a4f902301d)
+  - 컴파일러는 모든 프로퍼티 접근자 안에 getValue와 setValue 호출 코드를 생성해 준다.
+
+- 프로퍼티 값이 저장될 장소를 바꿀 수 있다. (이 부분 좀 이해가 안됨. 뒤에 좀 더 보자)
+
 
 ### 7.5.5 프로퍼티 값을 맵에 저장
+- 자신의 프로퍼티를 동적으로 정의할 수 있는 객체를 만들 때 위임 프로퍼티를 활용하는 경우가 많은데, 그런 객체를 확장 가능한 객체(expando object)라 부르기도 한다.
 
+```kotlin
+class Person {
+    // 추가 정보 (회사 등)
+    private val _attributes = hashMapOf<String, String>()
+
+    fun setAttribute(attrName: String, value: String) {
+        _attributes[attrName] = value
+    }
+
+    // 필수 정보
+    val name: String
+        get() = _attributes["name"]!!
+}
+
+>>> val prop = Person()
+>>> val data = mapOf("name" to "Dmitty", "company" to "JetBrains")
+>>> for((attrName, value) in data)
+      prop.setAttribute(attrName, value)
+
+>>> println(prop.name)
+Dmitty
+```
+
+```kotlin
+    // 필수 정보
+    /*  
+        val name: String
+        get() = _attributes["name"]!!
+    */
+    val name: String by _attributes
+```
+- by _attributes 코드를 통해서 쉽게 사용할 수 있다.
+- 이게 가능한 이유는 Map 인터페이스에 대해 getValue, setValue 확장 함수를 제공하고, getValue에서 맵 프로퍼티 값을 저장 시, 자동으로 프로퍼티 이름을 키로 활용
 
 ### 7.5.6 프레임워크에서 위임 프로퍼티 활용
 
+```kotlin
+object Users : IdTable() {  // 데이터베이스 테이블에 해당
+    val name = varchar("name", lenght = 50).index()
+    val age = integer("age")
+
+}
+
+class User(id: EntityID) : Entity(id) { // 테이블에 들어 있는 구체적인 엔티티에 해당
+    var name: String by Users.name      // 테이블의 name 컬럼에 매치
+    var age: Int by Users.age
+}
+
+>>> user.age += 1 // user에 해당하는 데이터베이스 엔티티가 자동으로 갱신
+```
 
 
