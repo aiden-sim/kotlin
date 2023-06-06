@@ -423,11 +423,11 @@ Dmitty
 ```
 
 ```kotlin
-    // 필수 정보
-    /*  
-        val name: String
-        get() = _attributes["name"]!!
-    */
+// 필수 정보
+/*  
+    val name: String
+    get() = _attributes["name"]!!
+*/
     val name: String by _attributes
 ```
 - by _attributes 코드를 통해서 쉽게 사용할 수 있다.
