@@ -247,21 +247,83 @@ public operator fun CharSequence.iterator(): CharIterator = object : CharIterato
 
 
 ## 7.4 구조 분해 선언과 component 함수
+- 구조 분해를 사용하면 복합적인 값을 분해해서 여러 다른 변수를 한꺼번에 초기화할 수 있음
+- 구조 분해 선언은 함수에서 여러 값을 반환할 때 유용
+
+```kotlin
+>>> val p = Point(10, 20)
+>>> val (x, y) = p // x와 y 변수를 선언한 다음에 p의 여러 컴포넌트로 초기화
+>>> println(x)
+10
+>>>println(y)
+20
+```
+- 구조 분해 선언(관례 사용)의 각 변수를 초기화하기 위해 componentN 이라는 함수를 호출
+  - N은 구조 분해 선언에 있는 변수 위치의 번호 (최대 다섯개 까지 제공)
+
+- ![image](https://github.com/simjunbo/kotlin/assets/7076334/de5a245a-c25b-4c50-a0a1-8ed904f49631)
+
+### 의문점) 그냥 getter 를 사용하면 안되나?
+```kotlin
+data class NameComponents(val name: String, val extension: String)
+
+fun splitFilename(fullName: String): NameComponents {
+    val result = fullName.split('.', limit = 2)
+    return NameComponents(result[0], result[1])
+}
+
+// 구조분해
+>>> val(name, ext) = splitFilename("example.kt")
+>>> println(name)
+>>> println(ext)
+
+// getter
+>>> val fileName = splitFilename("example.kt")
+>>> println(fileName.name)
+>>> println(fileName.extension)
+```
+
+- 일반적인 data class 반환 구조보다 크기가 정해진 컬렉션을 다루는 구조 분해가 유용
+```kolint
+fun splitFilename(fullName: String): NameComponents {
+    val (name, extension) = fullName.split('.', limit = 2)
+    return NameComponents(name, extension)
+}
+```
 
 ### 7.4.1 구조 분해 선언과 루프
 
+```kotlin
+fun printEntries(map: Map<String, String>) {
+    for ((key, value) in map) {
+        println("$key -> $value")
+    }
+}
+```
+- 루프안에서 구조 분해 선언은 이터레이션할 때 매우 유용
+- 위 예제는 두 가지 코틀린 관례 활용
+  - 이터레이션 관례 (Map에서 iterator)
+  - Map.Entry 에 대한 구조 분해 
+
 
 ## 7.5 프로퍼티 접근자 로직 재활용: 위임 프로퍼티
+- 예를 들어 프로퍼티 위임을 통해 자신의 값을 필드가 아닌 데이터베이스 테이블이나 브라우저 세션, 맵등에 저장
+- 위임은 객체가 직접 작업을 수행하지 않고 다른 도우미 객체가 그 작업을 처리하도록 맡기는 디자인 패턴. 이때 작업을 처리하는 도우미 객체를 위임 객체라 부름
 
 ### 7.5.1 위임 프로퍼티 소개
 
+
 ### 7.5.2 위임 프로퍼티 사용: by lazy()를 사용한 프로퍼티 초기화 지연
+
 
 ### 7.5.3 위임 프로퍼티 구현
 
+
 ### 7.5.4 위임 프로퍼티 컴파일 규칙
 
+
 ### 7.5.5 프로퍼티 값을 맵에 저장
+
 
 ### 7.5.6 프레임워크에서 위임 프로퍼티 활용
 
